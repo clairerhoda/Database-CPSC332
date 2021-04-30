@@ -3,8 +3,10 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	// "log"
-	// "net/http"
+	"log"
+	"net/http"
+    "github/clairerhoda/Database_CPSC332/department.go"
+    
 	_ "github.com/lib/pq"
 )
 
@@ -35,7 +37,7 @@ func OpenConnection() *sql.DB {
 }
 
 func main() {
-	// http.HandleFunc("/", department.GETHandler)
-	// http.HandleFunc("/insert", department.POSTHandler)
-	// log.Fatal(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/", GETHandler)
+	http.HandleFunc("/insert", POSTHandler)
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

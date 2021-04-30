@@ -1,4 +1,4 @@
-module github.com
+module github.com/clairerhoda/Database_CPSC332.git
 
 go 1.15
 
