@@ -124,5 +124,4 @@ func UserExecute(r *mux.Router) {
 	http.HandleFunc("/getUsers", GETHandler)
 	subRouter.HandleFunc("/insertUsers/{office_id}", POSTHandler).Methods("POST")
 	subRouter.HandleFunc("/deleteUser/{user_id}", DELETEHandler).Methods("DELETE")
-
 }
