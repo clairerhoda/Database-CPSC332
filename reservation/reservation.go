@@ -11,11 +11,6 @@ import (
 
 	_ "github.com/lib/pq"
 )
-
-// t, err := time.Parse(l, data[i].StartTime)
-// 		t2, err := time.Parse(l, data[i].EndTime)
-// 		t3, err := time.Parse(l, data[i].CreatedAt)
-// 		t4, err := time.Parse(l, data[i].CancelledPendingReopen) 
 		
 const (
 	host     = "127.0.0.1"
