@@ -48,6 +48,7 @@ type User struct {
 	AccessLevel int `json:"access_level"`
 }
 
+
 func GETHandler(w http.ResponseWriter, r *http.Request) {
 	db := OpenConnection()
 

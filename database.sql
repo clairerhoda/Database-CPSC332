@@ -1,6 +1,6 @@
 -- Database: Rational_Room_Reservations
 -- DROP DATABASE "Rational_Room_Reservations";
-
+SELECT * FROM reservations
 CREATE DATABASE "Rational_Room_Reservations"
     WITH 
     OWNER = postgres
@@ -32,23 +32,25 @@ END;
 $$ LANGUAGE plpgsql strict immutable;
 
 CREATE SEQUENCE seq maxvalue 2147483647;
+INSERT INTO buildings (department_id, name, address) VALUES ((SELECT department_id FROM departments WHERE department_id=419247080), 'test', 'fre')
+SET timezone = 'America/Los_Angeles';
 
 CREATE TABLE departments (
 	department_id INT DEFAULT pseudo_encrypt(nextval('seq')::INT) UNIQUE PRIMARY KEY NOT NULL,
-	"name" VARCHAR(50) NOT NULL
+	"name" VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE buildings	(
 	building_id INT DEFAULT pseudo_encrypt(nextval('seq')::INT) UNIQUE PRIMARY KEY NOT NULL,
 	department_id INT REFERENCES departments (department_id),
-	"name" VARCHAR(50) NOT NULL,
-	address VARCHAR(50) NOT NULL
+	"name" VARCHAR(100) NOT NULL,
+	address VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE offices	(
 	office_id INT DEFAULT pseudo_encrypt(nextval('seq')::INT) UNIQUE PRIMARY KEY NOT NULL,
 	department_id INT REFERENCES departments (department_id),
-	"name" VARCHAR(50) NOT NULL,
+	"name" VARCHAR(100) NOT NULL,
 	priority_level INT NOT NULL
 );
 
@@ -57,7 +59,7 @@ CREATE TABLE users	(
 	office_id INT REFERENCES offices (office_id),
 	email VARCHAR(50) NOT NULL,
 	password_hash VARCHAR(50) NOT NULL,
-	phone VARCHAR(50) NOT NULL,
+	phone VARCHAR(20) NOT NULL,
 	first_name VARCHAR(50) NOT NULL,
 	last_name VARCHAR(50) NOT NULL,
 	access_level INT NOT NULL
@@ -96,7 +98,7 @@ CREATE TABLE equipment	(
 	equipment_id INT DEFAULT pseudo_encrypt(nextval('seq')::INT) UNIQUE PRIMARY KEY NOT NULL,
 	room_id INT REFERENCES rooms (room_id),
 	price FLOAT8 NOT NULL,
-	description VARCHAR(50) NOT NULL,
+	description VARCHAR(100) NOT NULL,
 	"type" VARCHAR(50) NOT NULL,
 	unavailable BOOL NOT NULL,
 	fixed BOOL NOT NULL
@@ -108,12 +110,12 @@ CREATE TABLE reservations	(
 	user_id INT REFERENCES users (user_id),
 	priority_level INT NOT NULL,
 	account_number INT NOT NULL,
-	start_time DATE NOT NULL,
-	end_time DATE NOT NULL,
-	purpose VARCHAR(50) NOT NULL,
+	start_time TIMESTAMP without time zone NOT NULL,
+	end_time TIMESTAMP without time zone NOT NULL,
+	purpose VARCHAR(100) NOT NULL,
 	number_of_people INT NOT NULL,
-	created_at DATE NOT NULL,
-	cancelled_pending_reopen DATE NOT NULL
+	created_at TIMESTAMP without time zone DEFAULT now() NOT NULL,
+	cancelled_pending_reopen TIMESTAMP without time zone DEFAULT now() NOT NULL
 );
 
 CREATE TABLE reservation_attendees	(
@@ -125,7 +127,6 @@ CREATE TABLE reserved_equipment	(
 	equipment_id INT PRIMARY KEY REFERENCES equipment (equipment_id),
 	reservation_id INT REFERENCES reservations (reservation_id)
 );
-
 
 -- DROP TABLE reserved_equipment;
 -- DROP TABLE reservation_attendees;
