@@ -1,13 +1,40 @@
 package department
 
 import (
+	"database/sql"
+	"fmt"
 	"encoding/json"
 	"log"
 	"net/http"
-    "github/clairerhoda/Database_CPSC332/main.go"
 
 	_ "github.com/lib/pq"
 )
+
+const (
+	host     = "127.0.0.1"
+	port     = 5432
+	user     = "postgres"
+	password = "chese21"
+	dbname   = "Rational_Room_Reservations"
+)
+
+func OpenConnection() *sql.DB {
+	psqlInfo := fmt.Sprintf("host=%s port=%d user=%s "+
+		"password=%s dbname=%s sslmode=disable",
+		host, port, user, password, dbname)
+
+	db, err := sql.Open("postgres", psqlInfo)
+	if err != nil {
+		panic(err)
+	}
+	
+	err = db.Ping()
+	if err != nil {
+		panic(err)
+	}
+
+	return db
+}
 
 type Department struct {
     DepartmentId int `json:"department_id"`
@@ -15,7 +42,7 @@ type Department struct {
 }
 
 func GETHandler(w http.ResponseWriter, r *http.Request) {
-	db := main.OpenConnection()
+	db := OpenConnection()
 
 	rows, err := db.Query("SELECT * FROM departments")
 	if err != nil {
@@ -49,7 +76,7 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlStatement := `INSERT INTO Departments (name) VALUES ($1)`
+	sqlStatement := `INSERT INTO departments (name) VALUES ($1)`
 
     for i := range data {
         _, err = db.Exec(sqlStatement, data[i].Name)
@@ -61,4 +88,9 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
     
 	w.WriteHeader(http.StatusOK)
 	defer db.Close()
+}
+
+func DepartmentExecute() {
+	http.HandleFunc("/getDepartments", GETHandler)
+	http.HandleFunc("/insertDepartments", POSTHandler)
 }
