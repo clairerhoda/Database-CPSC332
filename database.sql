@@ -1,6 +1,6 @@
 -- Database: Rational_Room_Reservations
 -- DROP DATABASE "Rational_Room_Reservations";
-SELECT * FROM reservations
+
 CREATE DATABASE "Rational_Room_Reservations"
     WITH 
     OWNER = postgres
@@ -32,8 +32,6 @@ END;
 $$ LANGUAGE plpgsql strict immutable;
 
 CREATE SEQUENCE seq maxvalue 2147483647;
-INSERT INTO buildings (department_id, name, address) VALUES ((SELECT department_id FROM departments WHERE department_id=419247080), 'test', 'fre')
-SET timezone = 'America/Los_Angeles';
 
 CREATE TABLE departments (
 	department_id INT DEFAULT pseudo_encrypt(nextval('seq')::INT) UNIQUE PRIMARY KEY NOT NULL,
@@ -62,7 +60,8 @@ CREATE TABLE users	(
 	phone VARCHAR(20) NOT NULL,
 	first_name VARCHAR(50) NOT NULL,
 	last_name VARCHAR(50) NOT NULL,
-	access_level INT NOT NULL
+	access_level INT NOT NULL,
+	is_deleted BOOL NOT NULL
 );
 
 CREATE TABLE user_proxies	(
@@ -115,7 +114,8 @@ CREATE TABLE reservations	(
 	purpose VARCHAR(100) NOT NULL,
 	number_of_people INT NOT NULL,
 	created_at TIMESTAMP without time zone DEFAULT now() NOT NULL,
-	cancelled_pending_reopen TIMESTAMP without time zone DEFAULT now() NOT NULL
+	cancelled_pending_reopen TIMESTAMP without time zone DEFAULT now() NOT NULL,
+	is_deleted BOOL NOT NULL
 );
 
 CREATE TABLE reservation_attendees	(
@@ -127,6 +127,19 @@ CREATE TABLE reserved_equipment	(
 	equipment_id INT PRIMARY KEY REFERENCES equipment (equipment_id),
 	reservation_id INT REFERENCES reservations (reservation_id)
 );
+
+
+-- SELECT * FROM departments;
+-- SELECT * FROM buildings;
+-- SELECT * FROM offices;
+-- SELECT * FROM users;
+-- SELECT * FROM user_proxies;
+-- SELECT * FROM sectional_rooms;
+-- SELECT * FROM rooms;
+-- SELECT * FROM equipment;
+-- SELECT * FROM reservations;
+-- SELECT * FROM reservation_attendees;
+-- SELECT * FROM reserved_equipment;
 
 -- DROP TABLE reserved_equipment;
 -- DROP TABLE reservation_attendees;
