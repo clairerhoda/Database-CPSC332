@@ -152,7 +152,7 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlStatement := `INSERT INTO reservations (room_id, user_id, priority_level, account_number, start_time, end_time, purpose, number_of_people, created_At, cancelled_pending_reopen) VALUES ((SELECT room_id FROM rooms WHERE room_id='`+ room_id+ `'), (SELECT user_id FROM users WHERE user_id='`+ user_id+ `'), $1, $2, $3, $4, $5, $6, $7, $8)`
+	sqlStatement := `INSERT INTO reservations (room_id, user_id, priority_level, account_number, start_time, end_time, purpose, number_of_people, created_at, cancelled_pending_reopen) VALUES ((SELECT room_id FROM rooms WHERE room_id='`+ room_id+ `'), (SELECT user_id FROM users WHERE user_id='`+ user_id+ `'), $1, $2, $3, $4, $5, $6, $7, $8)`
 	for i := range data {
 		t, err := time.Parse(time.RFC3339, data[i].StartTime)
 		t2, err := time.Parse(time.RFC3339, data[i].EndTime)
@@ -187,12 +187,20 @@ func DELETEHandler(w http.ResponseWriter, r *http.Request) {
 		panic(err)
 	}
 
-    sqlStatement := `UPDATE reservations SET cancelled_pending_reopen = $1 WHERE reservation_id = $2`
-	_, err = db.Exec(sqlStatement, time.Now().Format(time.RFC3339), reservation_id)
+    sqlStatement2 := `UPDATE reservations SET cancelled_pending_reopen = $1 WHERE reservation_id = $2`
+	_, err = db.Exec(sqlStatement2, time.Now().Format(time.RFC3339), reservation_id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		panic(err)
 	}
+
+	sqlStatement3 := `UPDATE reservations SET is_deleted = NOT is_deleted WHERE reservation_id = $1`
+	_, err = db.Exec(sqlStatement3, reservation_id)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		panic(err)
+	}
+
 	w.WriteHeader(http.StatusOK)
 	defer db.Close()
 }

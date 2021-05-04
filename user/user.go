@@ -87,7 +87,8 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlStatement := `INSERT INTO users (office_id, email, password_hash, phone, first_name, last_name, access_level) VALUES ((SELECT office_id FROM offices WHERE office_id='`+ office_id+ `'), $1, $2, $3, $4, $5, $6)`
+	sqlStatement := `INSERT INTO users (office_id, email, password_hash, phone, first_name, last_name, access_level) VALUES ((SELECT office_id FROM offices WHERE office_id='`+ office_id+ `'), $1, $2, $3, $4, $5, $6) RETURNING
+	user_id;`
     for i := range data {
         _, err = db.Exec(sqlStatement, data[i].Email, data[i].PasswordHash, data[i].Phone, data[i].FirstName, data[i].LastName, data[i].AccessLevel)
         if err != nil {
@@ -106,15 +107,15 @@ func DELETEHandler(w http.ResponseWriter, r *http.Request) {
 
 	db := OpenConnection()
 
-	sqlStatement := `DELETE FROM reservations WHERE user_id =  $1`
-	_, err := db.Exec(sqlStatement, user_id)
+	sqlStatement1 := `DELETE FROM reservations WHERE user_id =  $1`
+	_, err := db.Exec(sqlStatement1, user_id)
 
-	sqlStatement = `DELETE FROM users WHERE user_id =  $1`
-	_, err = db.Exec(sqlStatement, user_id)
-
-	if err != nil {
-		panic(err)
-	  }
+	sqlStatement2 := `UPDATE users SET is_deleted = NOT is_deleted WHERE user_id = $1`
+		_, err = db.Exec(sqlStatement2, user_id)
+		if err != nil {
+			w.WriteHeader(http.StatusBadRequest)
+			panic(err)
+		}
     
 	w.WriteHeader(http.StatusOK)
 	defer db.Close()
