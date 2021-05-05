@@ -50,6 +50,7 @@ type Reservation struct {
 	NumberOfPeople int `json:"number_of_people"`
 	CreatedAt string `json:"created_at"`
 	CancelledPendingReopen string `json:"cancelled_pending_reopen"`
+	IsDeleted bool `json:"is_deleted"`
 }
 
 func GETHandler(w http.ResponseWriter, r *http.Request) {
@@ -65,7 +66,7 @@ func GETHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var reservation Reservation
-		rows.Scan(&reservation.ReservationId, &reservation.RoomId, &reservation.UserId, &reservation.PriorityLevel, &reservation.AccountNumber, &reservation.StartTime, &reservation.EndTime, &reservation.Purpose, &reservation.NumberOfPeople, &reservation.CreatedAt, &reservation.CancelledPendingReopen)
+		rows.Scan(&reservation.ReservationId, &reservation.RoomId, &reservation.UserId, &reservation.PriorityLevel, &reservation.AccountNumber, &reservation.StartTime, &reservation.EndTime, &reservation.Purpose, &reservation.NumberOfPeople, &reservation.CreatedAt, &reservation.CancelledPendingReopen, &reservation.IsDeleted)
 		reservations = append(reservations, reservation)
 	}
 
@@ -152,7 +153,7 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlStatement := `INSERT INTO reservations (room_id, user_id, priority_level, account_number, start_time, end_time, purpose, number_of_people, created_at, cancelled_pending_reopen) VALUES ((SELECT room_id FROM rooms WHERE room_id='`+ room_id+ `'), (SELECT user_id FROM users WHERE user_id='`+ user_id+ `'), $1, $2, $3, $4, $5, $6, $7, $8)`
+	sqlStatement := `INSERT INTO reservations (room_id, user_id, priority_level, account_number, start_time, end_time, purpose, number_of_people, created_at, cancelled_pending_reopen, is_deleted) VALUES ((SELECT room_id FROM rooms WHERE room_id='`+ room_id+ `'), (SELECT user_id FROM users WHERE user_id='`+ user_id+ `'), $1, $2, $3, $4, $5, $6, $7, $8, $9)`
 	for i := range data {
 		t, err := time.Parse(time.RFC3339, data[i].StartTime)
 		t2, err := time.Parse(time.RFC3339, data[i].EndTime)
@@ -162,7 +163,7 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 			panic(err)
 		}
 		
-		_, err = db.Exec(sqlStatement, access_level, data[i].AccountNumber, t, t2, data[i].Purpose, data[i].NumberOfPeople, t3, time.Time{}.Format(time.RFC3339))
+		_, err = db.Exec(sqlStatement, access_level, data[i].AccountNumber, t, t2, data[i].Purpose, data[i].NumberOfPeople, t3, time.Time{}.Format(time.RFC3339), false)
 		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
 			panic(err)

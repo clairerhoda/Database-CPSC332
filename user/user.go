@@ -46,6 +46,7 @@ type User struct {
 	FirstName string `json:"first_name"`
 	LastName string `json:"last_name"`
 	AccessLevel int `json:"access_level"`
+	IsDeleted bool `json:"is_deleted"`
 }
 
 
@@ -61,7 +62,7 @@ func GETHandler(w http.ResponseWriter, r *http.Request) {
 
 	for rows.Next() {
 		var user User
-		rows.Scan(&user.UserId, &user.OfficeId, &user.Email, &user.PasswordHash, &user.Phone, &user.FirstName, &user.LastName, &user.AccessLevel)
+		rows.Scan(&user.UserId, &user.OfficeId, &user.Email, &user.PasswordHash, &user.Phone, &user.FirstName, &user.LastName, &user.AccessLevel, &user.IsDeleted)
 		users = append(users, user)
 	}
 
@@ -87,10 +88,9 @@ func POSTHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sqlStatement := `INSERT INTO users (office_id, email, password_hash, phone, first_name, last_name, access_level) VALUES ((SELECT office_id FROM offices WHERE office_id='`+ office_id+ `'), $1, $2, $3, $4, $5, $6) RETURNING
-	user_id;`
+	sqlStatement := `INSERT INTO users (office_id, email, password_hash, phone, first_name, last_name, access_level, is_deleted) VALUES ((SELECT office_id FROM offices WHERE office_id='`+ office_id+ `'), $1, $2, $3, $4, $5, $6, $7)`
     for i := range data {
-        _, err = db.Exec(sqlStatement, data[i].Email, data[i].PasswordHash, data[i].Phone, data[i].FirstName, data[i].LastName, data[i].AccessLevel)
+        _, err = db.Exec(sqlStatement, data[i].Email, data[i].PasswordHash, data[i].Phone, data[i].FirstName, data[i].LastName, data[i].AccessLevel, false)
         if err != nil {
             w.WriteHeader(http.StatusBadRequest)
             panic(err)
